@@ -1,57 +1,30 @@
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
 using namespace std;
-#define ll long long int
+#define ll long long
 const ll mod = 1e9 + 7;
-const ll maxn = 2e6 + 5;
-ll cnt, par[maxn], rnk[maxn], sz[maxn];
 
-void make_set(ll a) {
-	par[a] = a;
-	rnk[a] = 1;
-	sz[a] = 1;
-}
-
-ll find(ll a) {
-	if (a == par[a]) return a;
-	return par[a] = find(par[a]);
-}
-
-void merge(ll a, ll b) {
-	ll p1 = find(a);
-	ll p2 = find(b);
-	if (p1 == p2) {
-		return;
+template <typename T>class DisjointSets {
+public:
+	set<T> p;
+	vector<T> sz, par;
+	vector<vector<T> >comp;
+	DisjointSets(T size) {
+		sz.resize(size + 5); par.resize(size + 5); comp.resize(size + 5);
+		for (T i = 1; i <= size; i++) {sz[i] = 1; par[i] = i; comp[i].push_back(i); p.insert(i);}
 	}
-	if (p1 > p2) swap(p1, p2);
-	par[p1] = p2;
-	sz[p2] += sz[p1];
-	if (rnk[p1] == rnk[p2]) rnk[p2]++;
-	cnt--;
-}
-
-bool same(ll a, ll b) {
-	return (par[a] == par[b]);
-}
-
-ll count() {
-	return cnt;
-}
-
-ll get_size(ll a) {
-	return sz[par[a]];
-}
-
-
-int main() {
-	ios_base::sync_with_stdio(0);
-	cin.tie(0); cout.tie(0);
-
-	ll n;
-	cin >> n;
-	for (ll i = 1; i <= n; i++) {
-		make_set(i);
+	T get_size(T u) {return sz[find(u)];}
+	T find(T x) {return (par[x] == x ? x : par[x] = find(par[x]));}
+	void unite(T x, T y) {
+		T x_root = find(x);
+		T y_root = find(y);
+		if (x_root == y_root) { return; }
+		if (sz[x_root] < sz[y_root]) { swap(x_root, y_root); }
+		if (p.find(y_root) != p.end()) {p.erase(y_root);}
+		for (T v : comp[y_root])comp[x_root].push_back(v);
+		sz[x_root] += sz[y_root];
+		par[y_root] = x_root;
+		comp[y_root].clear();
 	}
-
-}
-
+	bool connected(T x, T y) {return find(x) == find(y);}
+};
 
