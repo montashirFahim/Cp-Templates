@@ -1,56 +1,79 @@
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
 using namespace std;
-#define ll long long int
-const int MX = 1000005;
 
-int f[MX], ar[MX];
-int block_size, cnt;
-struct Query {int l, r, idx;};
+#define block 320
+#define ll long long
+ll ara[100009], ans[100009], answer = 0, cnt[100009];
 
-bool comp(Query a, Query b) {
-	int block_a = a.l / block_size;
-	int block_b = b.l / block_size;
-	if (block_a == block_b) { return a.r < b.r; }
-	return block_a < block_b;
+struct query {
+	ll l, r, i;
+} qry[100009];
+
+bool compare(query a, query b) {
+	ll tmp = a.l / block;
+	if (tmp != b.l / block) {
+		return a.l < b.l;
+	}
+	if ( tmp & 1)
+		return a.r < b.r;
+	return a.r > b.r;
 }
-void remove(int idx) {
-	f[ar[idx]]--;
-	if (f[ar[idx]] == 0) {cnt--; }
+
+inline void del(ll indx) {
+	cnt[ ara[indx] ]--;
+	if (cnt[ ara[indx] ] == 0)
+		answer--;
 }
-void add(int idx) {
-	f[ar[idx]]++;
-	if (f[ar[idx]] == 1) {cnt++; }
+
+inline void add(ll indx) {
+	cnt[ ara[indx] ]++;
+	if (cnt[ ara[indx] ] == 1)
+		answer++;
 }
 
 int main() {
-	ios_base::sync_with_stdio(0);
-	cin.tie(0); cout.tie(0);
-	int n;
-	cin >> n;
-	for (int i = 0; i < n; i++) {
-		cin >> ar[i];
+	ll t, caseno = 0;
+	cin >> t;
+	while (t--) {
+		ll n, q;
+		cin >> n >> q;
+		answer = 0;
+		for (ll i = 0; i < n; i++)cin >> ara[i];
+		for (ll i = 0; i < q; i++) {
+			cin >> qry[i].l >> qry[i].r;
+			qry[i].l--;
+			qry[i].r--;
+			qry[i].i = i;
+		}
+		sort(qry, qry + q, compare);
+		ll curl = 0, curr = 0;
+		for (ll i = 0; i < q; i++) {
+			while (curl < qry[i].l) {
+				del(curl);
+				curl++;
+			}
+			while (curl > qry[i].l) {
+				add(curl - 1);
+				curl--;
+			}
+			while (curr <= qry[i].r) {
+				add(curr);
+				curr++;
+			}
+			while (curr > qry[i].r + 1) {
+				del(curr - 1);
+				curr--;
+			}
+			ans[ qry[i].i ] = answer;
+		}
+
+		cout << ++caseno << ": ";
+		for (ll i = 0; i < q; i++)cout << ans[i] << "\n";
+
+		for (ll i = 0; i <= 100000; i++)
+			cnt[i] = 0;
+
 	}
-	int q;
-	cin >> q;
-	vector<Query>queries;
-	for (int i = 0; i < q; i++) {
-		int l, r;
-		cin >> l >> r;
-		queries.push_back({--l, --r, i});
-	}
-	cnt = 0;
-	block_size = sqrt(n);
-	sort(queries.begin(), queries.end(), comp);
-	int ml = -1, mr = -1;
-	vector<int>ans(q);
-	for (int i = 0; i < q; i++) {
-		int left = queries[i].l;
-		int right = queries[i].r;
-		while (ml < left) {remove(ml++);}
-		while (ml > left) {add(--ml);}
-		while (mr < right) {add(++mr);}
-		while (mr > right) {remove(mr--);}
-		ans[queries[i].idx] = cnt;
-	}
-	for (int &x : ans)cout << x << "\n";
+
+	return 0;
 }
